@@ -66,7 +66,8 @@ def play_round_with_history(env,
                             history_length,
                             batch_size, 
                             epsilon=0.2,
-                            gamma=0.98):
+                            gamma=0.98,
+                            num_actions=18):
     '''
     Play a single round for a provided environment. Uses a target network, experience replay,
     and incorporates a history buffer for agents with memory. The model used will need to accept 
@@ -87,7 +88,7 @@ def play_round_with_history(env,
         this_obs = history.get_tensor()
         qval = model(this_obs)
         if random.random() < epsilon:
-            action_ = env.action_space.sample()
+            action_ = np.random.randint(num_actions)
         else:
             action_ = qval.argmax().item()
 
