@@ -8,6 +8,7 @@ import dqn_utils as dq
 from collections import defaultdict, deque
 import tqdm
 from copy import deepcopy
+import numpy as np
 
 # build the model
 # encoder for pixel images
@@ -86,3 +87,7 @@ if __name__ == '__main__':
         )
 
         rewards[plan.current_scenario_name].append(performance['reward'])
+    
+    for s, r in rewards.items():
+        if r != []:
+            print(f"{s}: {np.mean(r):.4}")
