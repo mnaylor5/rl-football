@@ -9,6 +9,7 @@ from collections import defaultdict, deque
 import tqdm
 from copy import deepcopy
 import numpy as np
+from torch.utils.tensorboard import SummaryWriter
 
 # build the model
 # encoder for pixel images
@@ -57,10 +58,13 @@ class HistoryConvAgent(nn.Module):
 
 if __name__ == '__main__':
     plan = tg.TrainingPlan(basic_rounds=10, 
-                           easy_rounds=10, 
-                           medium_rounds=10, 
-                           hard_rounds=10, 
+                           easy_rounds=0, 
+                           medium_rounds=0, 
+                           hard_rounds=0, 
                            full_match_rounds=10)
+    
+    writer = SummaryWriter()
+    
     progress = tqdm.tqdm(range(len(plan.training_plan)))
     model = HistoryConvAgent()
     target_net = deepcopy(model)
@@ -68,9 +72,11 @@ if __name__ == '__main__':
     optim=torch.optim.RMSprop(model.parameters())
     replay_buffer = deque(maxlen=128)
     rewards = defaultdict(list)
+    losses = defaultdict(list)
     for match in progress:
         env = plan.get_next()
-        progress.set_description(plan.current_scenario_name)
+        scen = plan.current_scenario_name
+        progress.set_description(scen)
         performance = dq.play_round_with_history(
             env,
             model=model, 
@@ -86,7 +92,10 @@ if __name__ == '__main__':
             gamma=0.999
         )
 
-        rewards[plan.current_scenario_name].append(performance['reward'])
+        rewards[scen].append(performance['reward'])
+        losses[scen].append(np.mean(performance['losses']))
+        writer.add_scalar(f'Reward/{scen}', performance['reward'], len(rewards[scen]))
+        writer.add_scalar(f'Loss/{scen}', np.mean(performance['losses']), len(losses[scen]))
     
     for s, r in rewards.items():
         if r != []:
