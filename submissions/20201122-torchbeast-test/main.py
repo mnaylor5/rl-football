@@ -1,4 +1,5 @@
 import sys
+import torch
 from gfootball.env import observation_preprocessing
 RESOURCE_DIR = '/kaggle_simulations/agent'
 sys.path.append(RESOURCE_DIR)
